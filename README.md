@@ -1,1 +1,1 @@
-# Marvel information portal, using developmer Marvel API
+# Marvel information portal, using developmer Marvel API (https://developer.marvel.com/)
