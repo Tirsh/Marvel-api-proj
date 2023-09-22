@@ -1,8 +1,9 @@
 import { Component } from 'react';
 
-import Spinner from '../spinner/spinner';
+import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import MarvelServices from '../../services/MarvelServices';
+import AppServices from '../../services/AppServices';
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
@@ -31,8 +32,13 @@ class RandomChar extends Component {
         })
     }
 
+    onCharLoading = () => {
+        this.setState(() => ({loading: true}));
+    }
+
     updateChar = () => {
         const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
+        this.onCharLoading();
         this.marvelServices
             .getCharacter(id)
             .then(this.onCharLoaded)
@@ -81,13 +87,11 @@ class RandomChar extends Component {
 
 const View = ({char, check}) => {
     const {name, description, thumbnail, homepage, wiki} = char;
-    const imgStyles = {objectFit: 'cover'};
-    if (thumbnail.search(/image_not_available/) !== -1) {
-        imgStyles.objectFit = 'contain';
-    }
+    
+
     return (
         <div className="randomchar__block">
-        <img style={imgStyles} src={thumbnail} alt="Random character" className="randomchar__img"/>
+        <img style={AppServices.editPictureStyles(thumbnail)} src={thumbnail} alt="Random character" className="randomchar__img"/>
         <div className="randomchar__info">
             <p className="randomchar__name">{name}</p>
             <p className="randomchar__descr">

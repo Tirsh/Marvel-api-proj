@@ -14,8 +14,8 @@ class MarvelServices {
         return await res.json();
     }
 
-    getAllCharacters = async () => {
-        const res = this.getResource(`${this._apiBase}characters?limit=9&offset=250&${this._apikey}`);
+    getAllCharacters = async (offset) => {
+        const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apikey}`);
         return res.data.results.map(this._transformCharacter);
     }
 
@@ -26,12 +26,21 @@ class MarvelServices {
 
     _transformCharacter = (char) => {
         return {
+            id: char.id,
             name: char.name,
             description: char.description,
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
             homepage: char.urls[0].url,
             wiki: char.urls[1].url
         }
+    }
+
+    static editPictureStyles(pictureUrl) {
+        const imgStyles = {objectFit: 'cover'};
+        if (pictureUrl.search(/image_not_available/) !== -1) {
+            imgStyles.objectFit = 'contain';
+        }
+        return imgStyles;
     }
 }
 
