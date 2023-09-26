@@ -9,16 +9,19 @@ class CharList extends Component {
     state = {
         charsData: [],
         selected: null,
-        loading: true
+        loading: true,
+        charsAdding: false
     }   
 
     marvelServices = new MarvelServices();
 
     onDataLoad = (data) => {
-        this.setState({
-            charsData: data,
-            loading: false
-        })
+        console.log(data);
+        this.setState(({charsData}) => ({
+            charsData: [...charsData, ...data],
+            loading: false,
+            charsAdding: false
+        }))
     }
 
     onCharSelected = (id) => {
@@ -28,6 +31,7 @@ class CharList extends Component {
     }
 
     componentDidMount(){
+        console.log("mount");
         this.onDataUpdate();
     }
 
@@ -39,16 +43,16 @@ class CharList extends Component {
     }
 
     onCharLoading = () => {
-        this.setState(() => ({loading: true}));
+        this.setState(() => ({charsAdding: true}));
     }
 
 
     render() {
-        const {charsData, selected, loading} = this.state;
+        const {charsData, selected, loading, charsAdding} = this.state;
         return (
             <div className="char__list">                
                 <CharsRecords data={charsData} selected={selected} clickAction={[this.props.onCharSelect, this.onCharSelected]} loading={loading}/>                 
-                <button onClick={this.onDataUpdate} className="button button__main button__long">
+                <button disabled={charsAdding} onClick={this.onDataUpdate} className="button button__main button__long">
                     <div className="inner">load more</div>
                 </button>
             </div>
