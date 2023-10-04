@@ -1,63 +1,54 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
+import PropTypes from "prop-types"
 
 import MarvelServices from '../../services/MarvelServices';
 import AppServices from '../../services/AppServices';
 import Spinner from '../spinner/Spinner';
 import './charList.scss';
 
-class CharList extends Component {
-    state = {
-        charsData: [],
-        selected: null,
-        loading: true,
-        charsAdding: false
-    }   
+const CharList = (props) => {
+    const [charsData, setCharsData] = useState([]);
+    const [selected, setSelected] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [charsAdding, setCharsAdding] = useState(false);
 
-    marvelServices = new MarvelServices();
+    const marvelServices = new MarvelServices();
 
-    onDataLoad = (data) => {
-        console.log(data);
-        this.setState(({charsData}) => ({
-            charsData: [...charsData, ...data],
-            loading: false,
-            charsAdding: false
-        }))
-    }
+    const onDataLoad = (data) => {
+        setCharsData(charsData => [...charsData, ...data]);
+        setLoading(() => false);
+        setCharsAdding(() => false);
+    };
 
-    onCharSelected = (id) => {
-        this.setState(() =>  ({
-            selected: id
-        }))
-    }
+    const onCharSelected = (id) => {
+        setSelected(id);
+    };
 
-    componentDidMount(){
-        console.log("mount");
-        this.onDataUpdate();
-    }
+    useEffect(() => {
+        onDataUpdate();
+    }, []);
 
-    onDataUpdate = () => {
+    const onDataUpdate = () => {
         const offset = Math.floor(Math.random()*300);
-        this.onCharLoading();
-        this.marvelServices.getAllCharacters(offset)
-            .then(this.onDataLoad)
+        onCharLoading();
+        marvelServices.getAllCharacters(offset)
+            .then(onDataLoad)
     }
 
-    onCharLoading = () => {
-        this.setState(() => ({charsAdding: true}));
+    const onCharLoading = () => {
+        setCharsAdding(() => true);
     }
 
 
-    render() {
-        const {charsData, selected, loading, charsAdding} = this.state;
-        return (
-            <div className="char__list">                
-                <CharsRecords data={charsData} selected={selected} clickAction={[this.props.onCharSelect, this.onCharSelected]} loading={loading}/>                 
-                <button disabled={charsAdding} onClick={this.onDataUpdate} className="button button__main button__long">
-                    <div className="inner">load more</div>
-                </button>
-            </div>
-        )
-    }
+    return (
+        <div className="char__list">                
+            <CharsRecords data={charsData} selected={selected} clickAction={[props.onCharSelect, onCharSelected]} loading={loading}/>                 
+            <button disabled={charsAdding} onClick={onDataUpdate} className="button button__main button__long">
+                <div className="inner">load more</div>
+            </button>
+        </div>
+    )
+
 }
 
 const CharsRecords = ({data, selected, clickAction, loading}) => {
@@ -79,6 +70,10 @@ const CharsRecords = ({data, selected, clickAction, loading}) => {
                 {chars}
             </ul>
         )
+}
+
+CharList.propTypes = {
+    onCharSelect: PropTypes.func
 }
 
 export default CharList;
