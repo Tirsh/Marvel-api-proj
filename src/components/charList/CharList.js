@@ -1,22 +1,19 @@
 import { useEffect, useState } from 'react';
 import PropTypes from "prop-types"
 
-import MarvelServices from '../../services/MarvelServices';
-import AppServices from '../../services/AppServices';
+import useMarvelServices from '../../services/MarvelServices';
 import Spinner from '../spinner/Spinner';
 import './charList.scss';
 
 const CharList = (props) => {
     const [charsData, setCharsData] = useState([]);
     const [selected, setSelected] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [charsAdding, setCharsAdding] = useState(false);
+    const {loading, getAllCharacters} = useMarvelServices();
 
-    const marvelServices = new MarvelServices();
 
     const onDataLoad = (data) => {
         setCharsData(charsData => [...charsData, ...data]);
-        setLoading(() => false);
         setCharsAdding(() => false);
     };
 
@@ -25,25 +22,20 @@ const CharList = (props) => {
     };
 
     useEffect(() => {
-        onDataUpdate();
+        onDataUpdate(true);
     }, []);
 
-    const onDataUpdate = () => {
+    const onDataUpdate = (initial) => {
         const offset = Math.floor(Math.random()*300);
-        onCharLoading();
-        marvelServices.getAllCharacters(offset)
+        initial ? setCharsAdding(false): setCharsAdding(true);
+        getAllCharacters(offset)
             .then(onDataLoad)
     }
 
-    const onCharLoading = () => {
-        setCharsAdding(() => true);
-    }
-
-
     return (
         <div className="char__list">                
-            <CharsRecords data={charsData} selected={selected} clickAction={[props.onCharSelect, onCharSelected]} loading={loading}/>                 
-            <button disabled={charsAdding} onClick={onDataUpdate} className="button button__main button__long">
+            <CharsRecords data={charsData} selected={selected} clickAction={[props.onCharSelect, onCharSelected]} loading={loading} adding={charsAdding}/>                 
+            <button disabled={charsAdding} onClick={() => onDataUpdate(false)} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>
         </div>
@@ -51,8 +43,9 @@ const CharList = (props) => {
 
 }
 
-const CharsRecords = ({data, selected, clickAction, loading}) => {
-    if (loading) {
+const CharsRecords = ({data, selected, clickAction, loading, adding}) => {
+    const { editPictureStyles } = useMarvelServices();
+    if (loading && !adding) {
         return (<Spinner/>);
     }
     
@@ -60,7 +53,7 @@ const CharsRecords = ({data, selected, clickAction, loading}) => {
         const clazz = selected === item.id ? "char__item char__item_selected" : "char__item";
         return (
                 <li key={item.id} className={clazz} onClick={() => {clickAction.forEach(func => func(item.id)) }}>
-                    <img style={AppServices.editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
+                    <img style={editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
                     <div className="char__name">{item.name}</div>
                 </li>
         )

@@ -1,30 +1,23 @@
+import { useHttp } from "../hooks/http.hook";
 
+const useMarvelServices = () => {
 
-class MarvelServices {
+    const {loading, request, error, clearError} = useHttp();
 
-    _apiBase = 'https://gateway.marvel.com:443/v1/public/';
-    _apikey = 'apikey=5b914e3fbef97f81d2a62f14f887c53d';
-    getResource = async (url) => {
-        let res = await fetch(url);
+    const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
+    const _apikey = 'apikey=5b914e3fbef97f81d2a62f14f887c53d';
 
-        if (!res.ok) {
-            throw new Error(`Could not fetch ${url}, status: ${res.status}`);
-        }
-
-        return await res.json();
+    const getAllCharacters = async (offset) => {
+        const res = await request(`${_apiBase}characters?limit=9&offset=${offset}&${_apikey}`);
+        return res.data.results.map(_transformCharacter);
     }
 
-    getAllCharacters = async (offset) => {
-        const res = await this.getResource(`${this._apiBase}characters?limit=9&offset=${offset}&${this._apikey}`);
-        return res.data.results.map(this._transformCharacter);
+    const getCharacter = async (id) => {
+        const res = await request(`${_apiBase}characters/${id}?${_apikey}`);
+        return _transformCharacter(res.data.results[0]);
     }
 
-    getCharacter = async (id) => {
-        const res = await this.getResource(`${this._apiBase}characters/${id}?${this._apikey}`);
-        return this._transformCharacter(res.data.results[0]);
-    }
-
-    _transformCharacter = (char) => {
+    const _transformCharacter = (char) => {
         return {
             id: char.id,
             name: char.name,
@@ -36,13 +29,18 @@ class MarvelServices {
         }
     }
 
-    static editPictureStyles(pictureUrl) {
+    const editPictureStyles = (pictureUrl) => {
+        if (!pictureUrl) {
+            return null;
+        }
         const imgStyles = {objectFit: 'cover'};
         if (pictureUrl.search(/image_not_available/) !== -1) {
             imgStyles.objectFit = 'contain';
         }
         return imgStyles;
     }
+
+    return {loading, error, getAllCharacters, getCharacter, editPictureStyles, clearError}
 }
 
-export default MarvelServices;
+export default useMarvelServices;

@@ -1,18 +1,15 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types'
 
-import MarvelServices from '../../services/MarvelServices';
-import AppServices from '../../services/AppServices';
+import useMarvelServices from '../../services/MarvelServices';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/Spinner';
 import Skeleton from '../skeleton/Skeleton'
 import './charInfo.scss';
 
 const CharInfo = (props) => {
-    const marvelServices = new MarvelServices();
+    const {loading, error, getCharacter} = useMarvelServices();
     const [char, setChar] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(false);    
 
     useEffect(() => {
         updateChar();
@@ -24,16 +21,6 @@ const CharInfo = (props) => {
 
     const onCharLoaded = (char) => {
         setChar(char);
-        setLoading(() => false);
-    }
-
-    const onError = () => {
-        setLoading(() => false);
-        setError(() => true);
-    }
-
-    const onCharLoading = () => {
-        setLoading(() => true);
     }
 
     const updateChar = () => {
@@ -41,11 +28,8 @@ const CharInfo = (props) => {
         if (!charId){
             return;
         }
-        onCharLoading();
-        marvelServices
-            .getCharacter(charId)
+        getCharacter(charId)
             .then(onCharLoaded)
-            .catch(onError)
     }
 
     const content = char ? <View char={char}/> : null;
@@ -68,7 +52,7 @@ const View = ({char}) => {
     return (
     <>
             <div className="char__basics">
-                <img style={AppServices.editPictureStyles(thumbnail)} src={thumbnail} alt={name}/>
+                <img src={thumbnail} alt={name}/>
                 <div>
                     <div className="char__info-name">{name}</div>
                     <div className="char__btns">

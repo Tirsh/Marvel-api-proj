@@ -2,43 +2,27 @@ import { useState, useEffect } from 'react';
 
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
-import MarvelServices from '../../services/MarvelServices';
-import AppServices from '../../services/AppServices';
+import useMarvelServices from '../../services/MarvelServices';
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
 const RandomChar = () => {
     const [char, setChar] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
-
-    const marvelServices = new MarvelServices();
-
-    const onCharLoaded = (char) => {
-        setChar(char);
-        setLoading(false);
-    }
+    const {loading, error, getCharacter, clearError} = useMarvelServices();
 
     useEffect(() => {
         updateChar();
     }, [])
 
-    const onError = () => {
-        setLoading(false);
-        setError(() => true);
-    }
-
-    const onCharLoading = () => {
-        setLoading(() => true);
+    const onCharLoaded = (char) => {
+        setChar(char);
     }
 
     const updateChar = () => {
+        clearError();
         const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
-        onCharLoading();
-        marvelServices
-            .getCharacter(id)
+        getCharacter(id)
             .then(onCharLoaded)
-            .catch(onError)
     }
 
     const checkDescription = (descr) => {
@@ -79,12 +63,13 @@ const RandomChar = () => {
 }
 
 const View = ({char, check}) => {
-    const {name, description, thumbnail, homepage, wiki} = char;
-    
+    const {name, description, thumbnail, homepage, wiki} = char;   
+    console.log(thumbnail);
+    const {editPictureStyles} = useMarvelServices();
 
     return (
         <div className="randomchar__block">
-        <img style={AppServices.editPictureStyles(thumbnail)} src={thumbnail} alt="Random character" className="randomchar__img"/>
+        <img style={editPictureStyles(thumbnail)} src={thumbnail} alt="Random character" className="randomchar__img"/>
         <div className="randomchar__info">
             <p className="randomchar__name">{name}</p>
             <p className="randomchar__descr">
