@@ -49,10 +49,11 @@ const CharInfo = (props) => {
 
 const View = ({char}) => {
     const {name, description, thumbnail, homepage, wiki, stories} = char;
+    const {editPictureStyles} = useMarvelServices();
     return (
     <>
             <div className="char__basics">
-                <img src={thumbnail} alt={name}/>
+                <img style={editPictureStyles(thumbnail)} src={thumbnail} alt={name}/>
                 <div>
                     <div className="char__info-name">{name}</div>
                     <div className="char__btns">
