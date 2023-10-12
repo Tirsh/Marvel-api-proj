@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import useMarvelServices from '../../services/MarvelServices';
 import Spinner from '../spinner/Spinner';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './comicsList.scss';
+
 
 const ComicsList = () => {
     const {loading, error, getAllComic} = useMarvelServices();
@@ -25,11 +27,9 @@ const ComicsList = () => {
         setComicList(comicList => ( [...comicList, ...data]))
         setDataLoading(false);
     }
-    console.log("loading");
 
     const spinner = loading && !dataLoading ? <Spinner/> : null;
     const errorMessage = error ? <ErrorMessage/> : null;
-    console.log(comicList);
     return (
         <div className="comics__list">
             {spinner}
@@ -47,12 +47,12 @@ const View = (props) => {
         <ul className="comics__grid">
             {props.comics.map(comic => (
                 <li key={comic.id} className="comics__item">
-                <a href="#">
-                    <img src={comic.thumbnail} alt={comic.title} className="comics__item-img"/>
-                    <div className="comics__item-name">{comic.title}</div>
-                    <div className="comics__item-price">{comic.price ? comic.price + ' $': 'NOT AVAILABLE'}</div>
-                </a>
-            </li>
+                    <Link to={`/comics/${comic.id}`}>
+                        <img src={comic.thumbnail} alt={comic.title} className="comics__item-img"/>
+                        <div className="comics__item-name">{comic.title}</div>
+                        <div className="comics__item-price">{comic.price ? comic.price + ' $': 'NOT AVAILABLE'}</div>
+                    </Link>
+                </li>
             ))}                
         </ul>
     )
