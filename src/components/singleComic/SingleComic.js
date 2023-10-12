@@ -1,20 +1,55 @@
-import './singleComic.scss';
-import xMen from '../../resources/img/x-men.png';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
-const SingleComic = () => {
+import './singleComic.scss';
+import useMarvelServices from '../../services/MarvelServices';
+import Spinner from '../spinner/Spinner';
+import ErrorMessage from '../errorMessage/ErrorMessage';
+
+const SingleComic = ({id}) => {
+    const {loading, error, getComic, clearError} = useMarvelServices();
+    const [comic, setComic] = useState(null);
+
+    useEffect(()=>{
+        loadComic();
+    }, [])
+
+    const loadComic = () => {
+        clearError()
+        getComic(id)
+            .then(setComic);
+    }
+    // const onComicLoaded = (comic) => {
+    //     setComic(comic);
+    // }
+    const content = comic ?  <View comic={comic}/> : null;
+    const spinner = loading && !error ? <Spinner/> : null;
+    const errorMessage = error ? <ErrorMessage/> : null;
+    console.log(comic);
+    
     return (
         <div className="single-comic">
-            <img src={xMen} alt="x-men" className="single-comic__img"/>
-            <div className="single-comic__info">
-                <h2 className="single-comic__name">X-Men: Days of Future Past</h2>
-                <p className="single-comic__descr">Re-live the legendary first journey into the dystopian future of 2013 - where Sentinels stalk the Earth, and the X-Men are humanity's only hope...until they die! Also featuring the first appearance of Alpha Flight, the return of the Wendigo, the history of the X-Men from Cyclops himself...and a demon for Christmas!?</p>
-                <p className="single-comic__descr">144 pages</p>
-                <p className="single-comic__descr">Language: en-us</p>
-                <div className="single-comic__price">9.99$</div>
-            </div>
-            <a href="#" className="single-comic__back">Back to all</a>
+            {spinner}
+            {errorMessage}
+            {content}           
+            <Link to="/comics" className="single-comic__back">Back to all</Link>
         </div>
     )
+}
+
+const View = ({comic}) => {
+    return (
+        <>
+            <img src={comic.thumbnail} alt={comic.title} className="single-comic__img"/>
+            <div className="single-comic__info">
+                <h2 className="single-comic__name">{comic.title}</h2>
+                <p className="single-comic__descr">{comic.description}</p>
+                <p className="single-comic__descr">{`${comic.pages} pages`}</p>
+                <p className="single-comic__descr">{`Language: ${comic.lang ? comic.lang : 'no info'}`}</p>
+                <div className="single-comic__price">{`${comic.price}$`}</div>
+            </div>
+        </>
+    );
 }
 
 export default SingleComic;

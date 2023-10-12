@@ -64,7 +64,6 @@ const RandomChar = () => {
 
 const View = ({char, check}) => {
     const {name, description, thumbnail, homepage, wiki} = char;   
-    console.log(thumbnail);
     const {editPictureStyles} = useMarvelServices();
 
     return (
