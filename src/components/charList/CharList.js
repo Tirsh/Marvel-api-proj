@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import PropTypes from "prop-types"
 
 import useMarvelServices from '../../services/MarvelServices';
@@ -7,9 +7,9 @@ import './charList.scss';
 
 const CharList = (props) => {
     const [charsData, setCharsData] = useState([]);
-    const [selected, setSelected] = useState(null);
     const [charsAdding, setCharsAdding] = useState(false);
-    const {loading, getAllCharacters} = useMarvelServices();
+    const {loading, getAllCharacters, editPictureStyles} = useMarvelServices();
+    const itemsRefs = useRef([]);
 
 
     const onDataLoad = (data) => {
@@ -17,8 +17,10 @@ const CharList = (props) => {
         setCharsAdding(() => false);
     };
 
-    const onCharSelected = (id) => {
-        setSelected(id);
+    const focusOnItem = (id) => {
+        itemsRefs.current.forEach(item => item.classList.remove('char__item_selected'));
+        itemsRefs.current[id].classList.add('char__item_selected');
+        itemsRefs.current[id].focus();
     };
 
     useEffect(() => {
@@ -32,9 +34,42 @@ const CharList = (props) => {
             .then(onDataLoad)
     }
 
+    const renderItems = (data) => {
+        if (loading && !charsAdding) {
+            return (<Spinner/>);
+        }        
+        const chars = data.map((item, i) => {
+            return (
+                    <li 
+                        tabIndex={0}
+                        ref={el => itemsRefs.current[i] = el} 
+                        key={item.id} 
+                        className='char__item'
+                        onClick={() => {
+                            props.onCharSelect(item.id);
+                            focusOnItem(i)
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === ' ' || e.key === "Enter") {
+                                props.onCharSelect(item.id);
+                                focusOnItem(i);
+                            }
+                        }}>
+                        <img style={editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
+                        <div className="char__name">{item.name}</div>
+                    </li>
+            )
+        });
+        return (
+                <ul className="char__grid">
+                    {chars}
+                </ul>
+            )
+    }
+
     return (
         <div className="char__list">                
-            <CharsRecords data={charsData} selected={selected} clickAction={[props.onCharSelect, onCharSelected]} loading={loading} adding={charsAdding}/>                 
+            {renderItems(charsData)}                
             <button disabled={charsAdding} onClick={() => onDataUpdate(false)} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>
@@ -43,27 +78,7 @@ const CharList = (props) => {
 
 }
 
-const CharsRecords = ({data, selected, clickAction, loading, adding}) => {
-    const { editPictureStyles } = useMarvelServices();
-    if (loading && !adding) {
-        return (<Spinner/>);
-    }
-    
-    const chars = data.map((item) => {
-        const clazz = selected === item.id ? "char__item char__item_selected" : "char__item";
-        return (
-                <li key={item.id} className={clazz} onClick={() => {clickAction.forEach(func => func(item.id)) }}>
-                    <img style={editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
-                    <div className="char__name">{item.name}</div>
-                </li>
-        )
-    });
-    return (
-            <ul className="char__grid">
-                {chars}
-            </ul>
-        )
-}
+
 
 CharList.propTypes = {
     onCharSelect: PropTypes.func
