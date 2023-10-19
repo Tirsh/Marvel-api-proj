@@ -1,10 +1,11 @@
 import { useParams } from "react-router";
-import SingleComic from "../singleComic/SingleComic";
+import SingleComic from "../singleItems/SingleComic";
+import SingleCharacter from "../singleItems/SingleCharacter";
 
-const ComicPage = () => {
-    const {comicId} = useParams();
+const ComicPage = ({char}) => {
+    const {id} = useParams();
     return (
-        <SingleComic id={comicId}/>
+        char ? <SingleCharacter id={id}/> : <SingleComic id={id}/>
     );
 }
 

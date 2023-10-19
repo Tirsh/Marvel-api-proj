@@ -27,11 +27,26 @@ const useMarvelServices = () => {
         return _transformComic(res.data.results[0]);
     }
 
+    const getCharacterByName = async (name) => {
+        const res = await request(`${_apiBase}characters?name=${name}&limit=2&${_apikey}`);
+        if (res.data.total === 0 ) {
+            return null
+        }
+        return _transformCharacter(res.data.results[0]);
+    }
+
+    const _transformDescription = (descr) => {
+        if(!descr) {
+            return "We don't have any information about this character!"
+        }
+        return descr;
+    }
+
     const _transformCharacter = (char) => {
         return {
             id: char.id,
             name: char.name,
-            description: char.description,
+            description: _transformDescription(char.description),
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
             homepage: char.urls[0].url,
             wiki: char.urls[1].url,
@@ -62,7 +77,7 @@ const useMarvelServices = () => {
         return imgStyles;
     }
 
-    return {loading, error, getAllCharacters, getCharacter, getAllComic, getComic, editPictureStyles, clearError}
+    return {loading, error, getAllCharacters, getCharacter, getCharacterByName, getAllComic, getComic, editPictureStyles, clearError}
 }
 
 export default useMarvelServices;
