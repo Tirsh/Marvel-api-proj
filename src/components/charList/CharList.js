@@ -4,14 +4,29 @@ import PropTypes from "prop-types"
 
 import useMarvelServices from '../../services/MarvelServices';
 import Spinner from '../spinner/Spinner';
+import ErrorMessage from '../errorMessage/ErrorMessage';
 import './charList.scss';
 
 const CharList = (props) => {
     const [charsData, setCharsData] = useState([]);
     const [charsAdding, setCharsAdding] = useState(false);
-    const {loading, getAllCharacters, editPictureStyles} = useMarvelServices();
+    const {getAllCharacters, editPictureStyles, process, setProcess} = useMarvelServices();
     const itemsRefs = useRef([]);
 
+    const setContent = (process, Component) => {
+        switch (process) {
+            case 'waiting':
+                return <Spinner/>;
+            case 'loading':
+                return charsAdding ? <Component/> : <Spinner/>;
+            case 'error':
+                return <ErrorMessage/>
+            case 'confirmed':
+                return <Component/>
+            default:
+                throw new Error('Unexpected process state');
+        }
+    }
 
     const onDataLoad = (data) => {
         setCharsData(charsData => [...charsData, ...data]);
@@ -33,12 +48,10 @@ const CharList = (props) => {
         initial ? setCharsAdding(false): setCharsAdding(true);
         getAllCharacters(offset)
             .then(onDataLoad)
+            .then(() => setProcess('confirmed'))
     }
 
-    const renderItems = (data) => {
-        if (loading && !charsAdding) {
-            return (<Spinner/>);
-        }        
+    const renderItems = (data) => {      
         const chars = data.map((item, i) => {
             return (
                     <CSSTransition 
@@ -60,7 +73,7 @@ const CharList = (props) => {
                                 }
                             }}>
                             <img style={editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
-                            <div className="char__name">{item.name}</div>
+                            <div className="char__name">{item.title}</div>
                         </li>
                     </CSSTransition>
             )
@@ -76,15 +89,13 @@ const CharList = (props) => {
 
     return (
         <div className="char__list">                
-            {renderItems(charsData)}                
+            {setContent(process, () => renderItems(charsData))}               
             <button disabled={charsAdding} onClick={() => onDataUpdate(false)} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>
         </div>
     )
-
 }
-
 
 
 CharList.propTypes = {

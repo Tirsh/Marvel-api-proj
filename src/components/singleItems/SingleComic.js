@@ -1,10 +1,18 @@
-import useMarvelServices from '../../services/MarvelServices';
+import { Helmet } from 'react-helmet';
+
 import SingleItem from './SingleItem';
 
 const SingleComic = ({id}) => {
-    const services = useMarvelServices();
     return (
-        <SingleItem id={id} getItem={services.getComic} services={services}/>
+        <>
+            <Helmet>
+                <meta
+                    name="description"
+                    content="Page with imformation about comic"
+                />
+            </Helmet>
+            <SingleItem id={id} contentType={"comic"}/>
+        </>
     );
 
 }
