@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 
 import './singleItem.scss';
-import Spinner from '../spinner/Spinner';
-import ErrorMessage from '../errorMessage/ErrorMessage';
+import setContent from '../../utils/setContent';
+import useMarvelServices from '../../services/MarvelServices';
 
-const SingleItem = ({id, getItem, services}) => {
-    const {loading, error, clearError} = services;
+const SingleItem = ({id, contentType}) => {
+    const {getCharacter, getComic, clearError, setProcess, process} = useMarvelServices();
     const [item, setItem] = useState(null);
     const navigate = useNavigate();
 
@@ -19,38 +20,49 @@ const SingleItem = ({id, getItem, services}) => {
     }, [])
 
     const loadItem = () => {
-        clearError()
-        getItem(id)
-            .then(setItem);
+        clearError();
+        switch (contentType){
+            case "comic":
+                getComic(id)
+                .then(setItem)
+                .then(() => setProcess('confirmed'));
+                break;
+            case "char":
+                getCharacter(id)
+                .then(setItem)
+                .then(() => setProcess('confirmed'));
+                break;
+            default:
+                throw new Error("Wrong value") 
+        }
     }
-    
-    const content = item ?  <View item={item}/> : null;
-    const spinner = loading && !error ? <Spinner/> : null;
-    const errorMessage = error ? <ErrorMessage/> : null;
     
     return (
         <div className="single-item">
-            {spinner}
-            {errorMessage}
-            {content}           
+            {setContent(process, () => <View data={item} contentType={contentType}/>)}      
             <div onClick={goBack} className="single-item__back">Back to all</div>
         </div>
     )
 }
 
-const View = ({item}) => {
-    console.log(item);
+const View = ({data, contentType}) => {
     return (
         <>
-                <img src={item.thumbnail} alt={item.name} className="single-item__img"/>
-                <div className="single-item__info">
-                    <h2 className="single-item__name">{item.name}</h2>
-                    {item.title ? <h2 className="single-item__name">{item.title}</h2> : null}
-                    <p className="single-item__descr">{item.description}</p>
-                    {item.pages ? <p className="single-item__descr">{`${item.pages} pages`}</p> : null}
-                    {item.lang ? <p className="single-item__descr">{`Language: ${item.lang ? item.lang : 'no info'}`}</p> : null}
-                    {item.price ? <div className="single-item__price">{`${item.price}$`}</div> : null}
-                </div>
+            <Helmet>
+                <title>{data.title}</title>
+            </Helmet>
+            <img src={data.thumbnail} alt={data.title} className="single-item__img"/>
+            <div className="single-item__info">
+                <h2 className="single-item__name">{data.title}</h2>
+                <p className="single-item__descr">{data.description}</p>
+                {contentType === "comic" ? (<>
+                    <p className="single-item__descr">{data.pages ? `${data.pages} pages` : 'No info'}</p>
+                    <p className="single-item__descr">{`Language: ${data.lang ? data.lang : 'No info'}`}</p>
+                    <div className="single-item__price">{`${data.price}$`}</div>
+                    </>
+                ) : null}
+
+            </div>
         </>
     );
 }

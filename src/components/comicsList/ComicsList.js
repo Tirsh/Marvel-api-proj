@@ -7,11 +7,25 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './comicsList.scss';
 
-
 const ComicsList = () => {
-    const {loading, error, getAllComic} = useMarvelServices();
+    const {getAllComic, process, setProcess} = useMarvelServices();
     const [comicList, setComicList] = useState([]);
     const [dataLoading, setDataLoading] = useState(false);
+
+    const setContent = (process, Component) => {
+        switch (process) {
+            case 'waiting':
+                return <Spinner/>;
+            case 'loading':
+                return dataLoading ? <Component/> : <Spinner/>;
+            case 'error':
+                return <ErrorMessage/>
+            case 'confirmed':
+                return <Component/>
+            default:
+                throw new Error('Unexpected process state');
+        }
+    }
 
     useEffect(() => {
         onDataUpdate(false);
@@ -20,7 +34,8 @@ const ComicsList = () => {
     const onDataUpdate = (state) => {
         setDataLoading(state);
         getAllComic(Math.floor(Math.random() * 57000))
-            .then(onDataLoad);
+            .then(onDataLoad)
+            .then(() => setProcess('confirmed'));
     }
 
     const onDataLoad = (data) => {
@@ -28,13 +43,9 @@ const ComicsList = () => {
         setDataLoading(false);
     }
 
-    const spinner = loading && !dataLoading ? <Spinner/> : null;
-    const errorMessage = error ? <ErrorMessage/> : null;
     return (
         <div className="comics__list">
-            {spinner}
-            {errorMessage}
-            <View comics={comicList}/>
+            {setContent(process, () => (<View comics={comicList}/>))}
             <button disabled={dataLoading} onClick={() => onDataUpdate(true)} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>
@@ -42,10 +53,10 @@ const ComicsList = () => {
     )
 }
 
-const View = (props) => {
+const View = ({comics}) => {
     return (
         <ul className="comics__grid">
-            {props.comics.map(comic => (
+            {comics.map(comic => (
                 <li key={comic.id} className="comics__item">
                     <Link to={`/comics/${comic.id}`}>
                         <img src={comic.thumbnail} alt={comic.title} className="comics__item-img"/>

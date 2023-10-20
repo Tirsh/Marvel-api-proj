@@ -2,7 +2,7 @@ import { useHttp } from "../hooks/http.hook";
 
 const useMarvelServices = () => {
 
-    const {loading, request, error, clearError} = useHttp();
+    const {loading, request, error, clearError, process, setProcess} = useHttp();
 
     const _apiBase = 'https://gateway.marvel.com:443/v1/public/';
     const _apikey = 'apikey=5b914e3fbef97f81d2a62f14f887c53d';
@@ -45,7 +45,7 @@ const useMarvelServices = () => {
     const _transformCharacter = (char) => {
         return {
             id: char.id,
-            name: char.name,
+            title: char.name,
             description: _transformDescription(char.description),
             thumbnail: char.thumbnail.path + '.' + char.thumbnail.extension,
             homepage: char.urls[0].url,
@@ -60,7 +60,7 @@ const useMarvelServices = () => {
             title: comic.title,
             description: comic.description,
             pages: comic.pageCount,
-            lang: comic.textObjects.language,
+            lang: null,
             thumbnail: comic.thumbnail.path + '.' + comic.thumbnail.extension,
             price: comic.prices[0].price
         }
@@ -77,7 +77,18 @@ const useMarvelServices = () => {
         return imgStyles;
     }
 
-    return {loading, error, getAllCharacters, getCharacter, getCharacterByName, getAllComic, getComic, editPictureStyles, clearError}
+    return {loading,
+            error,
+            getAllCharacters, 
+            getCharacter, 
+            getCharacterByName, 
+            getAllComic, 
+            getComic, 
+            editPictureStyles, 
+            clearError, 
+            process,
+            setProcess
+        }
 }
 
 export default useMarvelServices;

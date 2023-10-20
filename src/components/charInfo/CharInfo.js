@@ -2,14 +2,12 @@ import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types'
 
 import useMarvelServices from '../../services/MarvelServices';
-import ErrorMessage from '../errorMessage/ErrorMessage';
-import Spinner from '../spinner/Spinner';
-import Skeleton from '../skeleton/Skeleton'
+import setContent from '../../utils/setContent';
 import './charInfo.scss';
 import { Link } from 'react-router-dom';
 
 const CharInfo = (props) => {
-    const {loading, error, getCharacter} = useMarvelServices();
+    const {getCharacter, setProcess, process} = useMarvelServices();
     const [char, setChar] = useState(null);
 
     useEffect(() => {
@@ -31,32 +29,26 @@ const CharInfo = (props) => {
         }
         getCharacter(charId)
             .then(onCharLoaded)
+            .then(() => setProcess('confirmed'))
     }
 
-    const content = char ? <View char={char}/> : null;
-    const sceleton = !loading && !error && !char ? <Skeleton/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const errorMessage = error ? <ErrorMessage/> : null;
     return (
         <div className="char__info">
-            {content}
-            {sceleton}
-            {spinner}
-            {errorMessage}
+            {setContent(process, View, char)}
         </div>
     )
 
 }
 
-const View = ({char}) => {
-    const {name, description, thumbnail, homepage, wiki, stories} = char;
+const View = ({data}) => {
+    const {title, description, thumbnail, homepage, wiki, stories} = data;
     const {editPictureStyles} = useMarvelServices();
     return (
     <>
             <div className="char__basics">
-                <img style={editPictureStyles(thumbnail)} src={thumbnail} alt={name}/>
+                <img style={editPictureStyles(thumbnail)} src={thumbnail} alt={title}/>
                 <div>
-                    <div className="char__info-name">{name}</div>
+                    <div className="char__info-name">{title}</div>
                     <div className="char__btns">
                         <a href={homepage} className="button button__main">
                             <div className="inner">homepage</div>

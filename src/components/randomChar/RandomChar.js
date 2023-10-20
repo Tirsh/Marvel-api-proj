@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 
-import Spinner from '../spinner/Spinner';
-import ErrorMessage from '../errorMessage/ErrorMessage';
 import useMarvelServices from '../../services/MarvelServices';
+import setContent from '../../utils/setContent';
+
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
 
 const RandomChar = () => {
     const [char, setChar] = useState({});
-    const {loading, error, getCharacter, clearError} = useMarvelServices();
+    const {getCharacter, clearError, setProcess, process} = useMarvelServices();
 
     useEffect(() => {
         updateChar();
@@ -23,28 +23,12 @@ const RandomChar = () => {
         const id = Math.floor(Math.random() * (1011400 - 1011000) + 1011000);
         getCharacter(id)
             .then(onCharLoaded)
+            .then(() => setProcess('confirmed'));
     }
-
-    const checkDescription = (descr) => {
-        if(descr) {
-            if (descr.length > 155) {
-                return descr.slice(0, 154) + "...";
-            }
-            return descr;
-        } else {
-            return "We don't have any information about this character!"
-        }
-    }
-
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error) ? <View char={char} check={checkDescription}/> : null;
-
+    console.log(setContent(process, View, char));
     return (
         <div className="randomchar">
-            {errorMessage}
-            {spinner}
-            {content}
+            {setContent(process, View, char)}
             <div className="randomchar__static">
                 <p className="randomchar__title">
                     Random character for today!<br/>
@@ -62,17 +46,19 @@ const RandomChar = () => {
     )
 }
 
-const View = ({char, check}) => {
-    const {name, description, thumbnail, homepage, wiki} = char;   
+const View = ({data}) => {
+    const {title, description, thumbnail, homepage, wiki} = data;   
     const {editPictureStyles} = useMarvelServices();
 
     return (
         <div className="randomchar__block">
         <img style={editPictureStyles(thumbnail)} src={thumbnail} alt="Random character" className="randomchar__img"/>
         <div className="randomchar__info">
-            <p className="randomchar__name">{name}</p>
+            <p className="randomchar__name">{title}</p>
             <p className="randomchar__descr">
-                {check(description)}
+                {description ? 
+                    description.length > 155 ?  description.slice(0, 154) + "..." : description 
+                        : "We don't have any information about this character!"}
             </p>
             <div className="randomchar__btns">
                 <a href={homepage} className="button button__main">
