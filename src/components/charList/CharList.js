@@ -1,5 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
-import {CSSTransition, TransitionGroup} from 'react-transition-group';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import PropTypes from "prop-types"
 
 import useMarvelServices from '../../services/MarvelServices';
@@ -34,9 +33,12 @@ const CharList = (props) => {
     };
 
     const focusOnItem = (id) => {
+        console.log("focus");
+        console.log(itemsRefs.current[id]);
         itemsRefs.current.forEach(item => item.classList.remove('char__item_selected'));
         itemsRefs.current[id].classList.add('char__item_selected');
         itemsRefs.current[id].focus();
+        
     };
 
     useEffect(() => {
@@ -54,42 +56,39 @@ const CharList = (props) => {
     const renderItems = (data) => {      
         const chars = data.map((item, i) => {
             return (
-                    <CSSTransition 
-                        key={item.id}
-                        timeout={500}
-                        classNames="char__item">
-                        <li 
-                            tabIndex={0}
-                            ref={el => itemsRefs.current[i] = el} 
-                            className='char__item'
-                            onClick={() => {
-                                props.onCharSelect(item.id);
-                                focusOnItem(i)
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === ' ' || e.key === "Enter") {
-                                    props.onCharSelect(item.id);
-                                    focusOnItem(i);
-                                }
-                            }}>
-                            <img style={editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
-                            <div className="char__name">{item.title}</div>
-                        </li>
-                    </CSSTransition>
+                <li 
+                    tabIndex={0}
+                    ref={el => itemsRefs.current[i] = el} 
+                    className='char__item'
+                    onClick={() => {
+                        props.onCharSelect(item.id);
+                        focusOnItem(i)
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === ' ' || e.key === "Enter") {
+                            props.onCharSelect(item.id);
+                            focusOnItem(i);
+                        }
+                    }}>
+                    <img style={editPictureStyles(item.thumbnail)} src={item.thumbnail} alt={`c${item.id}`}/>
+                    <div className="char__name">{item.title}</div>
+                </li>
             )
         });
         return (
                 <ul className="char__grid">
-                    <TransitionGroup component={null}>
-                        {chars}
-                    </TransitionGroup>                    
+                    {chars}                  
                 </ul>
             )
     }
 
+    const elements = useMemo(() => {
+        return setContent(process, () => renderItems(charsData));
+    }, [process])
+
     return (
         <div className="char__list">                
-            {setContent(process, () => renderItems(charsData))}               
+            {elements}             
             <button disabled={charsAdding} onClick={() => onDataUpdate(false)} className="button button__main button__long">
                 <div className="inner">load more</div>
             </button>

@@ -58,7 +58,7 @@ const View = ({data, contentType}) => {
                 {contentType === "comic" ? (<>
                     <p className="single-item__descr">{data.pages ? `${data.pages} pages` : 'No info'}</p>
                     <p className="single-item__descr">{`Language: ${data.lang ? data.lang : 'No info'}`}</p>
-                    <div className="single-item__price">{`${data.price}$`}</div>
+                    <div className="single-item__price">{data.price ? `${data.price} $`: 'No info'}</div>
                     </>
                 ) : null}
 

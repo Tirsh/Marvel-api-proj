@@ -25,7 +25,6 @@ const RandomChar = () => {
             .then(onCharLoaded)
             .then(() => setProcess('confirmed'));
     }
-    console.log(setContent(process, View, char));
     return (
         <div className="randomchar">
             {setContent(process, View, char)}
